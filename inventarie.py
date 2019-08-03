@@ -6,37 +6,11 @@ import cmd
 
 # type Barcode = String;
 
-# enum TransactionType {
-#     GivingOut,
-#     Returning,
-# }
-
-# struct Item {
-#     description: String,
-#     barcode: Barcode,
-# }
-
-# struct User {
-#     name: String,
-#     barcode: Barcode,
-# }
-
-# struct Transaction {
-#     amount: int, # negativt låna ut, positivt få tillbaka
-#     tool: Barcode,
-#     user: Barcode,
-#     date: DateTime<Local>,
-# }
-
-# Fil med current inventory
-# Fil med alla transactions
-# Fil med alla users
-
 def main():
     InventarieShell().cmdloop()
 
 ###################
-# Main typ ish
+# Main class
 ###################
 
 class InventarieShell(cmd.Cmd):
@@ -73,7 +47,6 @@ class InventarieShell(cmd.Cmd):
         'Test:  TEST'
         print(type(arg))
 
-    ## Transaction
     # > lånaut
     # Vad ska lånas ut?
     # > skanna
@@ -262,22 +235,6 @@ class InventarieShell(cmd.Cmd):
         return self.do_skapaverktyg(arg)
     def do_i(self, arg):
         return self.do_lamnain(arg)
-    # def help_l(self):
-    #     self.onecmd("help lanaut")
-    # def help_q(self):
-    #     self.onecmd("help quit")
-    # def help_u(self):
-    #     self.onecmd("help utlanat")
-    # def help_f(self):
-    #     self.onecmd("help forrad")
-    # def help_h(self):
-    #     self.onecmd("help help")
-    # def help_a(self):
-    #     self.onecmd("help anvandarinfo")
-    # def help_i(self):
-    #     self.onecmd("help verktygsinfo")
-    # def help_v(self):
-    #     self.onecmd("help skapaverktyg")
 
     # Helper functions
 
