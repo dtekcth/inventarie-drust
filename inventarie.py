@@ -4,8 +4,6 @@ import json
 import time
 import cmd
 
-# type Barcode = String;
-
 def main():
     InventarieShell().cmdloop()
 
@@ -70,7 +68,7 @@ class InventarieShell(cmd.Cmd):
                 else:
                     print("Verktyg skapades inte, avbryter utlåning.")
                     return
-            print(self.allItems[barcode])
+            print(self.allItems[barcode]["description"])
             tools.setdefault(barcode, 0)
             if int(self.currInventory[barcode]) < 1:
                 print("Detta ska inte finnas i förrådet, något är fel.")
@@ -109,7 +107,7 @@ class InventarieShell(cmd.Cmd):
         barcode = input("λ ")
         tools = {}
         while barcode != "q" and barcode != "quit":
-            print(self.allItems[barcode])
+            print(self.allItems[barcode]["description"] + " ska finnas på hylla" + self.allItems[barcode]["place"])
             tools.setdefault(barcode, 0)
             tools[barcode] += 1
             print("Skanna fler saker eller skriv q för gå vidare")
@@ -160,12 +158,14 @@ class InventarieShell(cmd.Cmd):
         name = input("λ ")
         print("Hur många vill du lägga till?")
         amount = input("λ ")
+        print("Var finns " + name + "?")
+        place = input("λ ")
         if arg == "":
             print("Vad har den för streckkod?")
             barcode = input("λ ")
-            self.addItem(name, barcode, amount)
+            self.addItem(name, barcode, amount, place)
         else: 
-            self.addItem(name, arg, amount) 
+            self.addItem(name, arg, amount, place) 
         print("Verktyg inlagt")
 
     def do_utlanat(self, arg):
@@ -176,12 +176,12 @@ class InventarieShell(cmd.Cmd):
             state.setdefault(t, 0)
             state[t] -= a
         for (t, a) in state.items():
-            print(self.allItems[t] + " - " + str(a) + " st")
+            print(self.allItems[t]["description"] + " - " + str(a) + " st")
 
     def do_forrad(self, arg):
         "Se vad som ska vara i förrådet just nu:  (F)orrad\nAnvänd alternativ -a för att se alla saker, även de med 0 balans."
         for t in [t for t in self.currInventory.items() if "-a" in arg or t[1] != 0]:
-            print(self.allItems[t[0]] + " - " + str(t[1]) + " st")
+            print(self.allItems[t[0]]["description"] + " - " + str(t[1]) + " st")
 
     def do_anvandarinfo(self, arg):
         "Se info om en användare:  (A)nvandarinfo\nAnvänd kommandot (U)tlanat för att se vad en person har utlånat just nu."
@@ -197,13 +197,14 @@ class InventarieShell(cmd.Cmd):
             state.setdefault(tool, 0)
             state[tool] -= amount
         for d in [d for d in list(state.items()) if d[1] != 0]:
-            print(self.allItems[d[0]] + " - " + str(d[1]) + " st")
+            print(self.allItems[d[0]]["description"] + " - " + str(d[1]) + " st")
 
     def do_verktygsinfo(self, arg):
         "Se info om ett verktyg:  (V)erktygsinfo"
         print("Vilket verktyg vill du se info om?")
         tool = input("λ ")
-        print(self.allItems[tool] + " - " + str(self.currInventory[tool]) + " inne just nu")
+        print(self.allItems[tool]["description"] + " - " + str(self.currInventory[tool]) + " inne just nu")
+        print("Finns på hylla " + self.allItems[tool]["place"])
         currMax = ("", 0)
         for (u, d) in [(t["user"], t["date"]) for t in self.allTransactions]:
             if d > currMax[1]:
@@ -256,7 +257,7 @@ class InventarieShell(cmd.Cmd):
         self.writeJson(self.allTransactions, self.transactionFile)
         for tool, amount in tools.items():
             if tool not in self.allItems:
-                print("Verktyg " + self.allItems[tool] + " finns inte, skapa det nu?")
+                print("Verktyg " + self.allItems[tool]["description"] + " finns inte, skapa det nu?")
                 if input("Y/N? ").lower() == "y":
                     self.do_skapaverktyg(tool)
                 else:
@@ -274,9 +275,9 @@ class InventarieShell(cmd.Cmd):
         self.emptyFile(self.userFile)
         self.writeJson(self.allUsers, self.userFile)
 
-    def addItem(self, desc, barcode, amount):
+    def addItem(self, desc, barcode, amount, place):
         "Adds a user to the class variable and writes that through to the file. Also updates inventory."
-        self.allItems[barcode] = desc
+        self.allItems[barcode] = {"description": desc, "place": place}
         self.emptyFile(self.itemFile)
         self.writeJson(self.allItems, self.itemFile)
 
